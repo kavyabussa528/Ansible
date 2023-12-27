@@ -1,0 +1,174 @@
+---
+- name: Update apt packages
+  become: yes
+  apt:
+    update_cache: yes
+
+- name: Update apt packages
+  become: yes
+  apt:
+    update_cache: yes
+
+- name: Install default JDK
+  become: yes
+  apt:
+    name: default-jdk
+    state: present
+
+- name: Create Tomcat group
+  become: yes
+  group:
+    name: tomcat
+    state: present
+
+- name: Create Tomcat user
+  become: yes
+  user:
+    name: tomcat
+    group: tomcat
+    shell: /bin/false
+    home: /opt/tomcat
+
+- name: Download Tomcat
+  become: yes 
+  get_url:
+    url: ""https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz
+    dest: /tmp/apache-tomcat-8.5.31.tar.gz
+
+- name: Create directory 
+  become: yes
+  file:
+    path: "/opt/tomcat"
+    state: directory
+
+- name: Extract Tomcat tar file
+  become: yes
+  unarchive:
+    src: /tmp/apache-tomcat-8.5.31.tar.gz
+    dest: /opt/tomcat
+    remote_src: yes
+    extra_opts: "--strip-components=1"
+
+- name: Change group ownership recursively
+  become: yes
+  file:
+    path: /opt/tomcat
+    recurse: yes
+    owner: tomcat
+    group: tomcat
+
+- name: Set group read permissions recursively for 'conf' directory
+  become: yes
+  file:
+    path: /opt/tomcat/conf
+    recurse: yes
+    mode: "g+r"
+    group: tomcat
+
+- name: Add execute permissions for group on 'conf' directory
+  become: yes
+  file:
+    path: /opt/tomcat/conf
+    mode: "g+x"
+    group: tomcat
+
+- name: Change ownership recursively for specific directory
+  become: yes
+  file:
+    path: "{{ item }}"
+    recurse: yes
+    owner: tomcat
+    group: tomcat
+  with_items:
+    - /opt/tomcat/webapps
+    - /opt/tomcat/work
+    - /opt/tomcat/temp
+    - /opt/tomcat/log
+
+- name: Configure Tomcat Service
+  become: yes
+  copy:
+    content: |
+      [Unit]
+      Description=Apache Tomcat web Application Container
+      After=network.target
+      [Service]
+      Type=forking
+      Environment=JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64/jre
+      Environment=CATALINA_PID=/opt/tomcat/temp/tomccontentl
+      Environment=CATALINA_HOME=/opt/tomcat
+      Environment=CATALINA_BASE=/opt/tomcat
+      Environment='CATALINA_OPTS=-Xms512M -Xmx1024M -server -XX:+UseParallelGC'
+      Environment='JAVA_OPTS=-Djava.awt.headless=true -Djava.security.egd=file:/dev/./urandom'
+      ExecStart=/opt/tomcat/bin/startup.sh
+      ExecStop=/opt/tomcat/bin/shutdown.sh
+      User=tomcat
+      Group=tomcat
+      UMask=0007
+      RestartSec=10
+      Restart=always
+      [Install]
+      WantedBy=multi-user.target
+    dest: /etc/systemd/system/tomcat.service
+  notify: Restart Tomcat Service
+
+- name: Reload Systemd
+  become: yes
+  systemd:
+    daemon_reload: yes
+
+- name: Start Tomcat Service
+  become: yes
+  service:
+    name: tomcat
+    state: started
+≈≈=========/
+- name: Install required packages
+  become: yes
+  apt:
+    name: 
+      - python-software-properties-common
+      - wget
+    state: present
+
+- name: Add Java repository
+  become: yes
+  apt_repository:
+    repo: ppa:webupd8team/java
+
+- name: Update apt
+  become: yes
+  apt:
+    update_cache: yes
+
+- name: Install default JDK
+  become: yes
+  apt:
+    name: default-jdk
+    state: present
+
+- name: Download Apache Maven tar file
+  become: yes
+  get_url:
+    url: "https://dlcdn.apache.org/maven/maven-3/3.9.6/binaries/apache-maven-3.9.6-bin.tar.gz"
+    dest: "/home/edureka/Downloads/apache-maven-3.3.9-bin.tar.gz"
+- name: Extract Apache Maven
+
+  become: yes
+
+  unarchive:
+
+    src: "/home/edureka/Downloads/apache-maven-3.3.9-bin.tar.gz"
+
+    dest: "/opt/"
+
+    remote_src: yes
+
+    creates: "/opt/apache-maven-3.3.9" 
+
+- name: Set up alternatives for Maven
+
+  become: yes
+
+  command: update-alternatives --install /usr/bin/mvn maven /opt/apache-maven-3.3.9/bin/mvn 1001
+
