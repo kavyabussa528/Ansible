@@ -1,7 +1,7 @@
 kind: PersistentVolume
 apiVersion: v1
 metadata:
-  name: mongo
+  name: mongo-pv
   labels:
     type: local
     app: mongo
@@ -18,7 +18,7 @@ spec:
 kind: PersistentVolumeClaim
 apiVersion: v1
 metadata:
-  name: mongo-claim
+  name: mongo-pvc
   labels:
     app: mongo
 spec:
