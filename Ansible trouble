@@ -1,0 +1,5 @@
+- name: Set execute permission for Maven executable
+  become: yes
+  file:
+    path: /opt/apache-maven-3.3.9/bin/mvn
+    mode: u+x
