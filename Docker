@@ -1,0 +1,10 @@
+version: '3.8'
+services:
+  web:
+    image: kavyabussa/case-study-image:latest
+    ports:
+      - "80:80"
+    volumes:
+      - web-data:/etc/apache2/htdocs
+volumes:
+  web-data:
